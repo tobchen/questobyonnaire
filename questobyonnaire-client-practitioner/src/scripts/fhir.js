@@ -5,9 +5,11 @@ function parseReference(reference)
         return null;
     }
 
-    let type = null;
-    let id = null;
-    let vid = null;
+    const result = {
+        type: null,
+        id: null,
+        vid: null,
+    };
 
     // XXX Regex? Are regex cool yet?
     const data = reference.split("/");
@@ -24,57 +26,68 @@ function parseReference(reference)
             return null;
         }
 
-        type = data[data.length - 4];
-        id = data[data.length - 3];
-        vid = data[data.length - 1];
+        result.type = data[data.length - 4];
+        result.id = data[data.length - 3];
+        result.vid = data[data.length - 1];
     }
     else
     {
-        type = data[data.length - 2];
-        id = data[data.length - 1];
+        result.type = data[data.length - 2];
+        result.id = data[data.length - 1];
     }
 
-    return [type, id, vid];
+    return result;
 }
 
 export async function create(base, resource)
 {
     if (typeof(resource) !== "object" || !("resourceType" in resource))
     {
-        throw "Resource isn't resource!";
+        throw new TypeError("Bad resource");
     }
 
     const url = `${base}/${resource["resourceType"]}`;
 
-    return await fetch(url, {
+    const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Content-Type": "application/fhir+json"
+            "Content-Type": "application/fhir+json",
         },
         body: JSON.stringify(resource),
-    }).then(
-        response => {
-            if (response.status !== 201)
-            {
-                throw "Creation failed!";
-            }
+    });
 
-            const location = response.headers.get("Location");
-            if (location === null)
-            {
-                throw "Location header missing!";
-            }
-
-            const parsedReference = parseReference(location);
-            if (parsedReference === null)
-            {
-                throw "Location parsing failed!";
-            }
-
-            return parsedReference;
-        },
-        () => {
-            throw "Posting failed!";
+    const result = {
+        success: response.ok,
+        parsedLocation: null,
+    };
+    
+    if (response.ok) {
+        const location = response.headers.get("Location");
+        if (location !== null) {
+            result.parsedLocation = parseReference(location);
         }
-    );
+    }
+
+    return result;
+}
+
+export async function read(base, resourceType, id, vid = null)
+{
+    const url = `${base}/${resourceType}/${id}${vid !== null ? `/_history/${vid}` : ""}`;
+
+    try
+    {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Accept": "application/fhir+json",
+            }
+        });
+
+        return response.ok ? response.json() : null;
+    }
+    catch
+    {
+        return null;
+    }
 }

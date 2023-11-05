@@ -1,6 +1,6 @@
 <script setup>
     import { ref } from "vue";
-    import { useRouter } from 'vue-router';
+    import { useRouter } from "vue-router";
     import QuestionnaireMetaEdit from '../components/QuestionnaireMetaEdit.vue';
     import { create as fhirCreate } from "../scripts/fhir";
 
@@ -11,11 +11,13 @@
     const newVersion = ref("");
     const newDescription = ref("");
 
+    const isSubmitEnabled = ref(true);
+
     async function newQuestionnaire(event)
     {
         event.preventDefault();
 
-        // TODO Disable re-submit
+        isSubmitEnabled.value = false;
         
         // TODO Check empty fields
         const resource = {
@@ -27,9 +29,13 @@
             "status": "draft"
         };
 
-        const newId = (await fhirCreate("http://localhost:8080/fhir", resource))[1];
+        const result = await fhirCreate("http://localhost:8080/fhir", resource);
+        if (result.success && result.parsedLocation !== null)
+        {
+            router.push({ path: `/editor/${result.parsedLocation.id}` });
+        }
 
-        router.push({ path: `/editor/${newId}` });
+        isSubmitEnabled.value = true;
     }
 </script>
 
@@ -43,7 +49,7 @@
                 v-model:description="newDescription"
             />
 
-            <input type="submit" value="New Questionnaire" />
+            <input type="submit" :disabled="!isSubmitEnabled" value="New Questionnaire" />
         </form>
     </section>
 </template>
