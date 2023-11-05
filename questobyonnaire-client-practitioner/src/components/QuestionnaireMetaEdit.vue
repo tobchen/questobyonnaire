@@ -2,7 +2,7 @@
     import { ref } from "vue";
     import uuid from "../scripts/uuid";
 
-    const props = defineProps({
+    defineProps({
         title: String,
         name: String,
         version: String,

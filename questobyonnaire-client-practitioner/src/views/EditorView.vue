@@ -4,9 +4,7 @@
 
 <template>
     <main>
-        <header>
-            <h2>Editor</h2>
-        </header>
+        <h2>Editor</h2>
         
         <RouterView />
     </main>
