@@ -95,53 +95,57 @@
 </script>
 
 <template>
-    <section v-if="fetchPending">
-        Fetching questionnaire...
-    </section>
-    <section v-else-if="fetchSuccess">
-        <form @submit.capture="saveDraft">
-            <QuestionnaireMetaEdit
-                v-model:title="thisMeta.title"
-                v-model:name="thisMeta.name"
-                v-model:version="thisMeta.version"
-                v-model:description="thisMeta.description"
-            />
+    <section>
+        <h3>Edit Questionnaire</h3>
 
-            <section>
-                <QuestionnaireItemEdit
-                    v-for="(item, index) in thisItems"
-                    :index="index"
-                    v-model:text="item.text"
-                    v-model:type="item.type"
-                    v-model:options="item.options"
-                    v-model:required="item.required"
-                    @delete="deleteItem"
-                    @move-up="moveUpItem"
-                    @move-down="moveDownItem"
+        <div v-if="fetchPending">
+            Fetching questionnaire...
+        </div>
+        <div v-else-if="fetchSuccess">
+            <form @submit.capture="saveDraft">
+                <QuestionnaireMetaEdit
+                    v-model:title="thisMeta.title"
+                    v-model:name="thisMeta.name"
+                    v-model:version="thisMeta.version"
+                    v-model:description="thisMeta.description"
                 />
-                <input type="button" value="Add Item" @click="addItem" />
-            </section>
 
-            <input
-                type="submit"
-                :disabled="!isSubmitEnabled || thisMeta.status !== 'unknown' && thisMeta.status !== 'draft'"
-                value="Save Draft"
-            />
-            <input
-                type="button"
-                :disabled="!isSubmitEnabled || thisMeta.status !== 'unknown' && thisMeta.status !== 'draft'"
-                value="Publish"
-                @click="publish"
-            />
-            <input
-                type="button"
-                :disabled="!isSubmitEnabled || thisMeta.status === 'retired'"
-                value="Retire"
-                @click="retire"
-            />
-        </form>
-    </section>
-    <section v-else>
-        Unable to fetch questionnaire!
+                <section>
+                    <QuestionnaireItemEdit
+                        v-for="(item, index) in thisItems"
+                        :index="index"
+                        v-model:text="item.text"
+                        v-model:type="item.type"
+                        v-model:options="item.options"
+                        v-model:required="item.required"
+                        @delete="deleteItem"
+                        @move-up="moveUpItem"
+                        @move-down="moveDownItem"
+                    />
+                    <input type="button" value="Add Item" @click="addItem" />
+                </section>
+
+                <input
+                    type="submit"
+                    :disabled="!isSubmitEnabled || thisMeta.status !== 'unknown' && thisMeta.status !== 'draft'"
+                    value="Save Draft"
+                />
+                <input
+                    type="button"
+                    :disabled="!isSubmitEnabled || thisMeta.status !== 'unknown' && thisMeta.status !== 'draft'"
+                    value="Publish"
+                    @click="publish"
+                />
+                <input
+                    type="button"
+                    :disabled="!isSubmitEnabled || thisMeta.status === 'retired'"
+                    value="Retire"
+                    @click="retire"
+                />
+            </form>
+        </div>
+        <div v-else>
+            Unable to fetch questionnaire!
+        </div>
     </section>
 </template>

@@ -66,23 +66,29 @@
 </script>
 
 <template>
-    <section v-if="fetchPending">
-        Fetching questionnaires...
-    </section>
-    <section v-else-if="fetchSuccess">
-        <ul>
-            <li v-for="questionnaire in questionnaires">
-                <router-link :to="`/editor/${questionnaire.id}`">
-                    {{ questionnaire.title }}
-                </router-link>
-            </li>
-        </ul>
-    </section>
-    <section v-else>
-        Unable to fetch questionnaire!
+    <section>
+        <h3>Choose Questionnaire</h3>
+
+        <div v-if="fetchPending">
+            Fetching questionnaires...
+        </div>
+        <div v-else-if="fetchSuccess">
+            <ul>
+                <li v-for="questionnaire in questionnaires">
+                    <router-link :to="`/editor/${questionnaire.id}`">
+                        {{ questionnaire.title }}
+                    </router-link>
+                </li>
+            </ul>
+        </div>
+        <div v-else>
+            Unable to fetch questionnaire!
+        </div>
     </section>
 
     <section>
+        <h3>New Questionnaire</h3>
+        
         <form @submit.capture="newQuestionnaire">
             <QuestionnaireMetaEdit
                 v-model:title="newMeta.title"
