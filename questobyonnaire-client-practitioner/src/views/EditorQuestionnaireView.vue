@@ -2,7 +2,8 @@
     import { ref } from "vue";
     import { useRoute } from "vue-router";
     import { read as fhirRead, update as fhirUpdate } from "../scripts/fhir";
-    import { createMeta, fillMeta, createResource as createQuestionnaire } from "../scripts/questionnaire";
+    import { createMeta, fillMeta, createResource as createQuestionnaire,
+        createItem } from "../scripts/questionnaire";
     import QuestionnaireMetaEdit from "../components/QuestionnaireMetaEdit.vue";
     import QuestionnaireItemEdit from "../components/QuestionnaireItemEdit.vue";
 
@@ -34,12 +35,7 @@
 
     function addItem()
     {
-        thisItems.value.push({
-            text: "",
-            type: "",
-            choices: "",
-            required: false,
-        });
+        thisItems.value.push(createItem());
     }
 
     function deleteItem(index)
@@ -109,7 +105,7 @@
                     :index="index"
                     v-model:text="item.text"
                     v-model:type="item.type"
-                    v-model:choices="item.choices"
+                    v-model:options="item.options"
                     v-model:required="item.required"
                     @delete="deleteItem"
                     @move-up="moveUpItem"

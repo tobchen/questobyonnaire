@@ -6,14 +6,14 @@
         index: Number,
         text: String,
         type: String,
-        choices: String,
+        options: String,
         required: Boolean,
     });
 
     defineEmits([
         "update:text",
         "update:type",
-        "update:choices",
+        "update:options",
         "update:required",
         "moveUp",
         "moveDown",
@@ -22,7 +22,7 @@
 
     const textId = ref(`questionnaire-item-edit-text-${uuid()}`);
     const typeId = ref(`questionnaire-item-edit-type-${uuid()}`);
-    const choicesId = ref(`questionnaire-item-edit-choices-${uuid()}`);
+    const optionsId = ref(`questionnaire-item-edit-options-${uuid()}`);
     const requiredId = ref(`questionnaire-item-edit-required-${uuid()}`);
 </script>
 
@@ -53,13 +53,13 @@
         </select>
         <br />
         <div v-show="type === 'choice' || type === 'open-choice'">
-            <label>Choices (Comma Separated):</label>
+            <label>Options (Comma Separated):</label>
             <br />
             <input
                 type="text"
-                :id="choicesId"
-                :value="choices"
-                @input="$emit('update:choices', $event.target.value)"
+                :id="optionsId"
+                :value="options"
+                @input="$emit('update:options', $event.target.value)"
             />
         </div>
         <label :for="requiredId">Required:</label>
