@@ -3,13 +3,13 @@
 </script>
 
 <template>
-    <header>
-        <h1>Questobyonnaire</h1>
+    <header class="text-white">
+        <h1 class="font-bold text-5xl">Questobyonnaire</h1>
 
         <nav>
-            <RouterLink to="/">Home</RouterLink>
+            <RouterLink to="/" class="hover:underline">Home</RouterLink>
             |
-            <RouterLink to="/editor">Editor</RouterLink>
+            <RouterLink to="/editor" class="hover:underline">Editor</RouterLink>
         </nav>
     </header>
 

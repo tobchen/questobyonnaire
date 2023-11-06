@@ -66,16 +66,16 @@
 </script>
 
 <template>
-    <section>
-        <h3>Choose Questionnaire</h3>
+    <section class="bg-emerald-500 rounded p-2">
+        <h3 class="font-bold text-xl">Choose Questionnaire</h3>
 
         <div v-if="fetchPending">
             Fetching questionnaires...
         </div>
         <div v-else-if="fetchSuccess">
-            <ul>
+            <ul class="text-white">
                 <li v-for="questionnaire in questionnaires">
-                    <router-link :to="`/editor/${questionnaire.id}`">
+                    <router-link :to="`/editor/${questionnaire.id}`" class="hover:underline">
                         {{ questionnaire.title }}
                     </router-link>
                 </li>
@@ -86,8 +86,8 @@
         </div>
     </section>
 
-    <section>
-        <h3>New Questionnaire</h3>
+    <section class="bg-emerald-500 rounded mt-2 p-2">
+        <h3 class="font-bold text-xl">New Questionnaire</h3>
         
         <form @submit.capture="newQuestionnaire">
             <QuestionnaireMetaEdit
@@ -97,7 +97,12 @@
                 v-model:description="newMeta.description"
             />
 
-            <input type="submit" :disabled="!isSubmitEnabled" value="New Questionnaire" />
+            <input
+                type="submit"
+                :disabled="!isSubmitEnabled"
+                value="New Questionnaire"
+                class="block w-full bg-white cursor-pointer rounded mt-2"
+            />
         </form>
     </section>
 </template>

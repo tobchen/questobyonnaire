@@ -95,8 +95,8 @@
 </script>
 
 <template>
-    <section>
-        <h3>Edit Questionnaire</h3>
+    <section class="bg-emerald-500 rounded p-2">
+        <h3 class="font-bold text-xl">Edit Questionnaire</h3>
 
         <div v-if="fetchPending">
             Fetching questionnaire...
@@ -122,26 +122,37 @@
                         @move-up="moveUpItem"
                         @move-down="moveDownItem"
                     />
-                    <input type="button" value="Add Item" @click="addItem" />
+
+                    <input
+                        type="button"
+                        value="Add Item"
+                        @click="addItem"
+                        class="block w-full bg-white cursor-pointer rounded mt-2"
+                    />
                 </section>
 
-                <input
-                    type="submit"
-                    :disabled="!isSubmitEnabled || thisMeta.status !== 'unknown' && thisMeta.status !== 'draft'"
-                    value="Save Draft"
-                />
-                <input
-                    type="button"
-                    :disabled="!isSubmitEnabled || thisMeta.status !== 'unknown' && thisMeta.status !== 'draft'"
-                    value="Publish"
-                    @click="publish"
-                />
-                <input
-                    type="button"
-                    :disabled="!isSubmitEnabled || thisMeta.status === 'retired'"
-                    value="Retire"
-                    @click="retire"
-                />
+                <fieldset class="grid grid-cols-3 gap-2 mt-2">
+                    <input
+                        type="submit"
+                        :disabled="!isSubmitEnabled || thisMeta.status !== 'unknown' && thisMeta.status !== 'draft'"
+                        value="Save Draft"
+                        class="block bg-white cursor-pointer rounded"
+                    />
+                    <input
+                        type="button"
+                        :disabled="!isSubmitEnabled || thisMeta.status !== 'unknown' && thisMeta.status !== 'draft'"
+                        value="Publish"
+                        @click="publish"
+                        class="block bg-white cursor-pointer rounded"
+                    />
+                    <input
+                        type="button"
+                        :disabled="!isSubmitEnabled || thisMeta.status === 'retired'"
+                        value="Retire"
+                        @click="retire"
+                        class="block bg-white cursor-pointer rounded"
+                    />
+                </fieldset>
             </form>
         </div>
         <div v-else>

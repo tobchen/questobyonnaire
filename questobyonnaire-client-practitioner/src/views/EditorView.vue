@@ -1,10 +1,10 @@
 <script setup>
-    import { RouterLink, RouterView } from "vue-router";
+    import { RouterView } from "vue-router";
 </script>
 
 <template>
-    <main>
-        <h2>Editor</h2>
+    <main class="bg-white p-2 rounded">
+        <h2 class="font-bold text-2xl">Editor</h2>
         
         <RouterView />
     </main>
