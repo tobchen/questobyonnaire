@@ -3,39 +3,36 @@
     import { useRouter } from "vue-router";
     import QuestionnaireMetaEdit from '../components/QuestionnaireMetaEdit.vue';
     import { create as fhirCreate } from "../scripts/fhir";
+    import { createMeta, createResource as createQuestionnaire } from "../scripts/questionnaire";
 
     const router = useRouter();
 
-    const newTitle = ref("");
-    const newName = ref("");
-    const newVersion = ref("");
-    const newDescription = ref("");
+    const newMeta = ref(createMeta("draft"));
 
     const isSubmitEnabled = ref(true);
 
-    async function newQuestionnaire(event)
+    function newQuestionnaire(event)
     {
         event.preventDefault();
 
         isSubmitEnabled.value = false;
         
-        // TODO Check empty fields
-        const resource = {
-            "resourceType": "Questionnaire",
-            "title": newTitle.value,
-            "name": newName.value,
-            "version": newVersion.value,
-            "description": newDescription.value,
-            "status": "draft"
-        };
+        const resource = createQuestionnaire(newMeta.value);
 
-        const result = await fhirCreate("http://localhost:8080/fhir", resource);
-        if (result.success && result.parsedLocation !== null)
-        {
-            router.push({ path: `/editor/${result.parsedLocation.id}` });
-        }
-
-        isSubmitEnabled.value = true;
+        fhirCreate("http://localhost:8080/fhir", resource).then(parsedLocation => {
+            if (parsedLocation !== null)
+            {
+                router.push({ path: `/editor/${parsedLocation.id}` });
+            }
+            else
+            {
+                alert("Questionnaire created, location unknown, though.");
+            }
+        }).catch(() => {
+            alert("Questionnaire creation failed!");
+        }).finally(() => {
+            isSubmitEnabled.value = true;
+        });
     }
 </script>
 
@@ -43,10 +40,10 @@
     <section>
         <form @submit.capture="newQuestionnaire">
             <QuestionnaireMetaEdit
-                v-model:title="newTitle"
-                v-model:name="newName"
-                v-model:version="newVersion"
-                v-model:description="newDescription"
+                v-model:title="newMeta.title"
+                v-model:name="newMeta.name"
+                v-model:version="newMeta.version"
+                v-model:description="newMeta.description"
             />
 
             <input type="submit" :disabled="!isSubmitEnabled" value="New Questionnaire" />

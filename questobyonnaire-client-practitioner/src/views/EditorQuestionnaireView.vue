@@ -1,7 +1,8 @@
 <script setup>
     import { ref } from "vue";
     import { useRoute } from "vue-router";
-    import { read as fhirRead } from "../scripts/fhir";
+    import { read as fhirRead, update as fhirUpdate } from "../scripts/fhir";
+    import { createMeta, fillMeta, createResource as createQuestionnaire } from "../scripts/questionnaire";
     import QuestionnaireMetaEdit from "../components/QuestionnaireMetaEdit.vue";
     import QuestionnaireItemEdit from "../components/QuestionnaireItemEdit.vue";
 
@@ -12,32 +13,28 @@
 
     const isSubmitEnabled = ref(true);
 
-    const thisTitle = ref("");
-    const thisName = ref("");
-    const thisVersion = ref("");
-    const thisDescription = ref("");
+    const thisId = route.params.id;
+    const thisMeta = ref(createMeta());
+    const thisItems = ref(new Array());
 
-    const theseItems = ref(new Array());
-
-    fhirRead("http://localhost:8080/fhir", "Questionnaire", route.params.id).then(resource => {
+    fhirRead("http://localhost:8080/fhir", "Questionnaire", thisId).then(resource => {
         if (resource !== null)
         {
             fetchSuccess.value = true;
 
-            thisTitle.value = "title" in resource ? resource["title"] : "";
-            thisName.value = "name" in resource ? resource["name"] : "";
-            thisVersion.value = "version" in resource ? resource["version"] : "";
-            thisDescription.value = "description" in resource ? resource["description"] : "";
+            fillMeta(thisMeta.value, resource);
 
             // TODO Add Items
         }
-
+    }).catch(() => {
+        // Do nothing
+    }).finally(() => {
         fetchPending.value = false;
     });
 
     function addItem()
     {
-        theseItems.value.push({
+        thisItems.value.push({
             text: "",
             type: "",
             choices: "",
@@ -47,24 +44,24 @@
 
     function deleteItem(index)
     {
-        theseItems.value.splice(index, 1);
+        thisItems.value.splice(index, 1);
     }
 
     function moveUpItem(index)
     {
         if (index > 0)
         {
-            const items = theseItems.value.splice(index, 1);
-            theseItems.value.splice(index - 1, 0, ...items);
+            const items = thisItems.value.splice(index, 1);
+            thisItems.value.splice(index - 1, 0, ...items);
         }
     }
 
     function moveDownItem(index)
     {
-        if (index < theseItems.value.length - 1)
+        if (index < thisItems.value.length - 1)
         {
-            const items = theseItems.value.splice(index, 1);
-            theseItems.value.splice(index + 1, 0, ...items);
+            const items = thisItems.value.splice(index, 1);
+            thisItems.value.splice(index + 1, 0, ...items);
         }
     }
 
@@ -72,7 +69,15 @@
     {
         isSubmitEnabled.value = false;
 
-        isSubmitEnabled.value = true;
+        const resource = createQuestionnaire(thisMeta.value, thisItems.value, thisId);
+
+        fhirUpdate("http://localhost:8080/fhir", resource).then(() => {
+            // Do nothing?
+        }).catch(() => {
+            alert("Updating failed!")
+        }).finally(() => {
+            isSubmitEnabled.value = true;
+        });
     }
 
     function finish(event)
@@ -92,15 +97,15 @@
     <section v-else-if="fetchSuccess">
         <form @submit.capture="finish">
             <QuestionnaireMetaEdit
-                v-model:title="thisTitle"
-                v-model:name="thisName"
-                v-model:version="thisVersion"
-                v-model:description="thisDescription"
+                v-model:title="thisMeta.title"
+                v-model:name="thisMeta.name"
+                v-model:version="thisMeta.version"
+                v-model:description="thisMeta.description"
             />
 
             <section>
                 <QuestionnaireItemEdit
-                    v-for="(item, index) in theseItems"
+                    v-for="(item, index) in thisItems"
                     :index="index"
                     v-model:text="item.text"
                     v-model:type="item.type"

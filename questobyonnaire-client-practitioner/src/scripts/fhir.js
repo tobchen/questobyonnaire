@@ -1,3 +1,13 @@
+function rejectNonOk(response)
+{
+    if (!response.ok)
+    {
+        throw new Error(`${response.status} ${response.statusText}`)
+    }
+
+    return response;
+}
+
 function parseReference(reference)
 {
     if (typeof(reference) !== "string")
@@ -56,38 +66,39 @@ export async function create(base, resource)
         body: JSON.stringify(resource),
     });
 
-    const result = {
-        success: response.ok,
-        parsedLocation: null,
-    };
-    
-    if (response.ok) {
-        const location = response.headers.get("Location");
-        if (location !== null) {
-            result.parsedLocation = parseReference(location);
-        }
+    return parseReference(rejectNonOk(response).headers.get("Location"));
+}
+
+export async function update(base, resource)
+{
+    if (typeof(resource) !== "object" || !("resourceType" in resource) || !("id" in resource))
+    {
+        throw new TypeError("Bad resource");
     }
 
-    return result;
+    const url = `${base}/${resource["resourceType"]}/${resource["id"]}`;
+
+    const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/fhir+json",
+        },
+        body: JSON.stringify(resource),
+    });
+
+    rejectNonOk(response);
 }
 
 export async function read(base, resourceType, id, vid = null)
 {
     const url = `${base}/${resourceType}/${id}${vid !== null ? `/_history/${vid}` : ""}`;
 
-    try
-    {
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                "Accept": "application/fhir+json",
-            }
-        });
+    const response = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Accept": "application/fhir+json",
+        }
+    });
 
-        return response.ok ? response.json() : null;
-    }
-    catch
-    {
-        return null;
-    }
+    return rejectNonOk(response).json();
 }
