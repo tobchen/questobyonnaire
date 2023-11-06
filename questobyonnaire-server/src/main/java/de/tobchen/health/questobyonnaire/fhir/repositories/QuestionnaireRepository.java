@@ -7,4 +7,6 @@ import de.tobchen.health.questobyonnaire.fhir.entities.QuestionnaireEntity;
 
 public interface QuestionnaireRepository extends CrudRepository<QuestionnaireEntity, Long> {
     public Iterable<QuestionnaireEntity> findAllByStatus(PublicationStatus status);
+
+    public Iterable<QuestionnaireEntity> findAllByStatusNot(PublicationStatus status);
 }

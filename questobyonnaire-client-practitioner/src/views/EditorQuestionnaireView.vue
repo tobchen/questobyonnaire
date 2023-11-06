@@ -19,14 +19,11 @@
     const thisItems = ref(new Array());
 
     fhirRead("http://localhost:8080/fhir", "Questionnaire", thisId).then(resource => {
-        if (resource !== null)
-        {
-            fetchSuccess.value = true;
+        fillMeta(thisMeta.value, resource);
 
-            fillMeta(thisMeta.value, resource);
+        // TODO Add Items
 
-            // TODO Add Items
-        }
+        fetchSuccess.value = true;
     }).catch(() => {
         // Do nothing
     }).finally(() => {
@@ -61,8 +58,10 @@
         }
     }
 
-    function saveDraft()
+    function saveDraft(event)
     {
+        event.preventDefault();
+
         isSubmitEnabled.value = false;
 
         const resource = createQuestionnaire(thisMeta.value, thisItems.value, thisId);
@@ -76,11 +75,20 @@
         });
     }
 
-    function finish(event)
+    function publish()
     {
-        event.preventDefault();
-
         isSubmitEnabled.value = false;
+
+        // TODO
+
+        isSubmitEnabled.value = true;
+    }
+
+    function retire()
+    {
+        isSubmitEnabled.value = false;
+
+        // TODO
 
         isSubmitEnabled.value = true;
     }
@@ -91,7 +99,7 @@
         Fetching questionnaire...
     </section>
     <section v-else-if="fetchSuccess">
-        <form @submit.capture="finish">
+        <form @submit.capture="saveDraft">
             <QuestionnaireMetaEdit
                 v-model:title="thisMeta.title"
                 v-model:name="thisMeta.name"
@@ -114,8 +122,23 @@
                 <input type="button" value="Add Item" @click="addItem" />
             </section>
 
-            <input type="button" :disabled="!isSubmitEnabled" value="Save Draft" @click="saveDraft" />
-            <input type="submit" :disabled="!isSubmitEnabled" value="Finish" />
+            <input
+                type="submit"
+                :disabled="!isSubmitEnabled || thisMeta.status !== 'unknown' && thisMeta.status !== 'draft'"
+                value="Save Draft"
+            />
+            <input
+                type="button"
+                :disabled="!isSubmitEnabled || thisMeta.status !== 'unknown' && thisMeta.status !== 'draft'"
+                value="Publish"
+                @click="publish"
+            />
+            <input
+                type="button"
+                :disabled="!isSubmitEnabled || thisMeta.status === 'retired'"
+                value="Retire"
+                @click="retire"
+            />
         </form>
     </section>
     <section v-else>

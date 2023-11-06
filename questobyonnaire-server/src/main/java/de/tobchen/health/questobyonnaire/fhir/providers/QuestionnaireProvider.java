@@ -21,6 +21,7 @@ import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Update;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.param.TokenParam;
+import ca.uhn.fhir.rest.param.TokenParamModifier;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import de.tobchen.health.questobyonnaire.fhir.entities.QuestionnaireEntity;
 import de.tobchen.health.questobyonnaire.fhir.repositories.QuestionnaireRepository;
@@ -45,11 +46,32 @@ public class QuestionnaireProvider extends AbstractQuestionnaireProvider
     @Search
     public List<Questionnaire> search(@OptionalParam(name = Questionnaire.SP_STATUS) TokenParam status)
     {
-        // TODO Catch exception
-        var pubStatus = status != null ? PublicationStatus.fromCode(status.getValue()) : null;
-        
-        var entities = pubStatus != null ?
-            repository.findAllByStatus(pubStatus) : repository.findAll();
+        Iterable<QuestionnaireEntity> entities;
+
+        if (status != null)
+        {
+            // TODO Catch exception
+            var pubStatus = PublicationStatus.fromCode(status.getValue());
+
+            var modifier = status.getModifier();
+            
+            if (modifier == null)
+            {
+                entities = repository.findAllByStatus(pubStatus);
+            }
+            else if (modifier == TokenParamModifier.NOT)
+            {
+                entities = repository.findAllByStatusNot(pubStatus);
+            }
+            else
+            {
+                throw new InvalidRequestException("Unsupported modifier");
+            }
+        }
+        else
+        {
+            entities = repository.findAll();
+        }
 
         var result = new ArrayList<Questionnaire>();
 

@@ -27,7 +27,7 @@
 </script>
 
 <template>
-    <div>
+    <fieldset>
         <label :for="textId">Text:</label>
         <br />
         <input
@@ -73,5 +73,5 @@
         <input type="button" value="Move Up" @click="$emit('moveUp', index)" />
         <input type="button" value="Move Down" @click="$emit('moveDown', index)" />
         <input type="button" value="Delete" @click="$emit('delete', index)" />
-    </div>
+    </fieldset>
 </template>
