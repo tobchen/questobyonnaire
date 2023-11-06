@@ -2,7 +2,6 @@ package de.tobchen.health.questobyonnaire.fhir.providers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.hl7.fhir.r4.model.IdType;
 import org.hl7.fhir.r4.model.Questionnaire;
@@ -22,8 +21,10 @@ import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Update;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.param.TokenParam;
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import de.tobchen.health.questobyonnaire.fhir.entities.QuestionnaireEntity;
 import de.tobchen.health.questobyonnaire.fhir.repositories.QuestionnaireRepository;
+import de.tobchen.health.questobyonnaire.fhir.util.QuestionnaireUtil;
 import de.tobchen.health.questobyonnaire.fhir.util.ResourceUtil;
 
 @Service
@@ -72,7 +73,11 @@ public class QuestionnaireProvider extends AbstractQuestionnaireProvider
 
         var optional = repository.findById(longId);
 
-        var questionnaire = resourceFromEntity(optional);
+        Questionnaire questionnaire = null;
+        if (optional.isPresent())
+        {
+            questionnaire = resourceFromEntity(optional.get());
+        }
 
         return questionnaire;
     }
@@ -80,25 +85,68 @@ public class QuestionnaireProvider extends AbstractQuestionnaireProvider
     @Create
     public MethodOutcome create(@ResourceParam Questionnaire questionnaire)
     {
+        QuestionnaireUtil.checkRules(questionnaire);
+
         ResourceUtil.removeMeta(questionnaire);
 
         // TODO Catch exception
         var resourceString = parser.encodeResourceToString(questionnaire);
 
-        var entity = new QuestionnaireEntity(questionnaire.getStatus(), resourceString);
-        repository.save(entity);
+        var status = questionnaire.getStatus();
+        if (status == null)
+        {
+            status = PublicationStatus.UNKNOWN;
+        }
+
+        var entity = new QuestionnaireEntity(status, resourceString);
+        entity = repository.save(entity);
+
+        questionnaire.setId(entity.getId().toString());
+        
+        // TODO Catch exception
+        resourceString = parser.encodeResourceToString(questionnaire);
+        entity.setResource(resourceString);
+
+        entity = repository.save(entity);
 
         return new MethodOutcome(new IdType("Questionnaire", entity.getId().toString()));
     }
 
     @Update
-    public MethodOutcome update(@IdParam IdType id, @ResourceParam Questionnaire questionnaire)
+    public MethodOutcome update(@IdParam IdType idType, @ResourceParam Questionnaire questionnaire)
     {
+        QuestionnaireUtil.checkRules(questionnaire);
+
         ResourceUtil.removeMeta(questionnaire);
+        
+        var status = questionnaire.getStatus();
+        if (status == null)
+        {
+            status = PublicationStatus.UNKNOWN;
+        }
 
-        // TODO Check statuses; allowed updates: unknown->*, draft->draft|active|retired, active->retired
+        // TODO Catch exception
+        var id = idType.getIdPartAsLong();
 
-        return new MethodOutcome();
+        var optionalEntity = repository.findById(id);
+        if (!optionalEntity.isPresent())
+        {
+            throw new InvalidRequestException("No resource to update found");
+        }
+
+        var entity = optionalEntity.get();
+
+        // TODO Allowed status updates: unknown->*, draft->draft|active|retired, active->retired
+        
+        entity.setStatus(status);
+
+        // TODO Catch exception
+        var resourceString = parser.encodeResourceToString(questionnaire);
+        entity.setResource(resourceString);
+
+        entity = repository.save(entity);
+
+        return new MethodOutcome(new IdType("Questionnaire", entity.getId().toString()));
     }
 
     private @Nullable Questionnaire resourceFromEntity(@NonNull QuestionnaireEntity entity)
@@ -107,13 +155,6 @@ public class QuestionnaireProvider extends AbstractQuestionnaireProvider
         var questionnaire = parser.parseResource(Questionnaire.class,
             entity.getResource());
 
-        ResourceUtil.addMeta(questionnaire, entity.getId().toString());
-
         return questionnaire;
-    }
-
-    private @Nullable Questionnaire resourceFromEntity(@NonNull Optional<QuestionnaireEntity> entity)
-    {
-        return entity.isPresent() ? resourceFromEntity(entity.get()) : null;
     }
 }
