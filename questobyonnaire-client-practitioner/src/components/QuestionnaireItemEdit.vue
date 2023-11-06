@@ -3,6 +3,7 @@
     import uuid from "../scripts/uuid";
 
     defineProps({
+        index: Number,
         text: String,
         type: String,
         choices: String,
@@ -14,6 +15,9 @@
         "update:type",
         "update:choices",
         "update:required",
+        "moveUp",
+        "moveDown",
+        "delete",
     ]);
 
     const textId = ref(`questionnaire-item-edit-text-${uuid()}`);
@@ -66,8 +70,8 @@
             @input="$emit('update:required', $event.target.checked)"
         />
         <br />
-        <input type="button" value="Move Up" />
-        <input type="button" value="Move Down" />
-        <input type="button" value="Delete" />
+        <input type="button" value="Move Up" @click="$emit('moveUp', index)" />
+        <input type="button" value="Move Down" @click="$emit('moveDown', index)" />
+        <input type="button" value="Delete" @click="$emit('delete', index)" />
     </div>
 </template>

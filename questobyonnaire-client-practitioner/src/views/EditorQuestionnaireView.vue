@@ -45,6 +45,29 @@
         });
     }
 
+    function deleteItem(index)
+    {
+        theseItems.value.splice(index, 1);
+    }
+
+    function moveUpItem(index)
+    {
+        if (index > 0)
+        {
+            const items = theseItems.value.splice(index, 1);
+            theseItems.value.splice(index - 1, 0, ...items);
+        }
+    }
+
+    function moveDownItem(index)
+    {
+        if (index < theseItems.value.length - 1)
+        {
+            const items = theseItems.value.splice(index, 1);
+            theseItems.value.splice(index + 1, 0, ...items);
+        }
+    }
+
     function saveDraft()
     {
         isSubmitEnabled.value = false;
@@ -77,11 +100,15 @@
 
             <section>
                 <QuestionnaireItemEdit
-                    v-for="item in theseItems"
+                    v-for="(item, index) in theseItems"
+                    :index="index"
                     v-model:text="item.text"
                     v-model:type="item.type"
                     v-model:choices="item.choices"
                     v-model:required="item.required"
+                    @delete="deleteItem"
+                    @move-up="moveUpItem"
+                    @move-down="moveDownItem"
                 />
                 <input type="button" value="Add Item" @click="addItem" />
             </section>
