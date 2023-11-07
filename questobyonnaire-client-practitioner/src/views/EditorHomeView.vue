@@ -42,8 +42,8 @@
 </script>
 
 <template>
-    <section class="bg-emerald-500 rounded p-2">
-        <h3 class="font-bold text-xl">Choose Questionnaire</h3>
+    <section class="p-2 rounded bg-emerald-500">
+        <h2 class="text-xl font-bold">Choose Questionnaire to Edit</h2>
 
         <div v-if="fetchPending">
             Fetching questionnaires...
@@ -62,8 +62,8 @@
         </div>
     </section>
 
-    <section class="bg-emerald-500 rounded mt-2 p-2">
-        <h3 class="font-bold text-xl">New Questionnaire</h3>
+    <section class="mt-2 p-2 rounded bg-emerald-500">
+        <h2 class="text-xl font-bold">New Questionnaire</h2>
         
         <form @submit.capture="newQuestionnaireClicked">
             <QuestionnaireMetaEdit
@@ -75,7 +75,7 @@
                 type="submit"
                 :disabled="!isSubmitEnabled"
                 value="New Questionnaire"
-                class="block w-full bg-white cursor-pointer rounded mt-2"
+                class="block w-full mt-2 rounded bg-white disabled:opacity-50 enabled:cursor-pointer"
             />
         </form>
     </section>

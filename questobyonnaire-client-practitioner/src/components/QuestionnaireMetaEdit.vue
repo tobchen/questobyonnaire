@@ -27,7 +27,7 @@
             <textarea
                 :value="description"
                 @input="$emit('update:description', $event.target.value)"
-                class="block w-full resize-none h-24"
+                class="block resize-none w-full h-24"
             ></textarea>
         </label>
     </section>

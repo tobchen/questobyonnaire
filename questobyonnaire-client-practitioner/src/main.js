@@ -18,20 +18,13 @@ const router = createRouter({
         },
         {
             path: "/editor",
-            name: "editor",
-            component: EditorView,
-            children: [
-                {
-                    path: "",
-                    name: "editor-home",
-                    component: EditorHomeView,
-                },
-                {
-                    path: ":id",
-                    name: "editor-questionnaire",
-                    component: EditorQuestionnaireView,
-                },
-            ],
+            name: "editor-home",
+            component: EditorHomeView,
+        },
+        {
+            path: "/editor/:id",
+            name: "editor-questionnaire",
+            component: EditorQuestionnaireView,
         },
     ],
 });

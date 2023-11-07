@@ -87,8 +87,8 @@
 </script>
 
 <template>
-    <section class="bg-emerald-500 rounded p-2">
-        <h3 class="font-bold text-xl">Edit Questionnaire</h3>
+    <section class="p-2 rounded bg-emerald-500">
+        <h2 class="text-xl font-bold">Edit Questionnaire</h2>
 
         <div v-if="fetchPending">
             Fetching questionnaire...
@@ -118,30 +118,30 @@
                         type="button"
                         value="Add Item"
                         @click="addItem"
-                        class="block w-full bg-white cursor-pointer rounded mt-2"
+                        class="block w-full mt-2 rounded bg-white cursor-pointer"
                     />
                 </section>
 
-                <fieldset class="grid grid-cols-3 gap-2 mt-2">
+                <fieldset class="mt-2 grid grid-cols-3 gap-2">
                     <input
                         type="submit"
                         :disabled="!isSubmitEnabled || thisQuestionnaire.status !== 'draft'"
                         value="Save Draft"
-                        class="block bg-white cursor-pointer rounded"
+                        class="rounded bg-white disabled:opacity-50 enabled:cursor-pointer"
                     />
                     <input
                         type="button"
                         :disabled="!isSubmitEnabled || thisQuestionnaire.status !== 'draft'"
                         value="Publish"
                         @click="publish"
-                        class="block bg-white cursor-pointer rounded"
+                        class="rounded bg-white disabled:opacity-50 enabled:cursor-pointer"
                     />
                     <input
                         type="button"
                         :disabled="!isSubmitEnabled || thisQuestionnaire.status === 'retired'"
                         value="Retire"
                         @click="retire"
-                        class="block bg-white cursor-pointer rounded"
+                        class="rounded bg-white disabled:opacity-50 enabled:cursor-pointer"
                     />
                 </fieldset>
             </form>

@@ -33,7 +33,7 @@
         <select
             :value="type"
             @input="$emit('update:type', $event.target.value)"
-            class="block w-full mt-2 bg-white p-1"
+            class="block w-full mt-2 p-1 bg-white"
         >
             <option value="" disabled="true">Item Type</option>
             <option value="boolean">Boolean</option>
@@ -55,7 +55,7 @@
             placeholder="Options (Comma Separated)"
             @input="$emit('update:options', $event.target.value)"
             v-show="type === 'choice' || type === 'openChoice'"
-            class="block placeholder:text-emerald-500 w-full mt-2"
+            class="block w-full mt-2 placeholder:text-emerald-500"
         />
 
         <label class="inline-block mt-2">
@@ -76,24 +76,24 @@
             Multiple
         </label>
         
-        <fieldset class="grid grid-cols-3 gap-2 mt-2">
+        <fieldset class="mt-2 grid grid-cols-3 gap-2">
             <input
                 type="button"
                 value="Move Up"
                 @click="$emit('moveUp', index)"
-                class="cursor-pointer rounded bg-white"
+                class="rounded bg-white cursor-pointer"
             />
             <input
                 type="button"
                 value="Move Down"
                 @click="$emit('moveDown', index)"
-                class="cursor-pointer rounded bg-white"
+                class="rounded bg-white cursor-pointer"
             />
             <input
                 type="button"
                 value="Delete"
                 @click="$emit('delete', index)"
-                class="cursor-pointer rounded bg-white"
+                class="rounded bg-white cursor-pointer"
             />
         </fieldset>
     </fieldset>

@@ -27,3 +27,28 @@ npm run dev
 ```sh
 npm run build
 ```
+
+## Development Notes
+
+### Tailwind
+
+Order of class settings:
+
+1. Display
+1. Resize Option
+1. Size
+1. Margin
+1. Padding
+1. Border
+   1. Style
+   1. Color
+1. Background Color
+1. Grid
+1. Font
+   1. Family
+   1. Size
+   1. Style
+   1. Color
+1. Pointer
+
+If x and y values are set individually, x is first.

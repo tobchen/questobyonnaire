@@ -13,5 +13,7 @@
         </nav>
     </header>
 
-    <RouterView />
+    <main>
+        <RouterView />
+    </main>
 </template>
