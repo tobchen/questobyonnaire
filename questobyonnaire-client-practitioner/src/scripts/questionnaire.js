@@ -1,109 +1,86 @@
-const supportedTypes = new Set([
-    "boolean",
-    "decimal",
-    "integer",
-    "date",
-    "dateTime",
-    "time",
-    "string",
-    "text",
-    "url",
-    "choice",
-    "open-choice",
-]);
+import { rejectNonOkResponse } from "./util";
 
-const choiceTypes = new Set([
-    "choice",
-    "open-choice",
-]);
+const baseUrl = "http://localhost:8080/rest/questionnaires"
 
-export function createMeta(status = "unknown")
+export function createQuestionnaire(status = "draft")
 {
     return {
         title: "",
-        name: "",
-        version: "",
         description: "",
         status,
+        items: new Array(),
     };
 }
 
-export function fillMeta(meta, questionnaire)
-{
-    meta.title = "title" in questionnaire ? questionnaire["title"] : "";
-    meta.name = "name" in questionnaire ? questionnaire["name"] : "";
-    meta.version = "version" in questionnaire ? questionnaire["version"] : "";
-    meta.description = "description" in questionnaire ? questionnaire["description"] : "";
-    meta.status = "status" in questionnaire ? questionnaire["status"] : "";
-}
-
-export function createItem()
+export function createQuestionnaireItem()
 {
     return {
         text: "",
-        type: "",
-        options: "",
+        type: "text",
         required: false,
+        multiple: false,
+        options: "",
     };
 }
 
-export function createResource(meta, items = null, id = null)
+export async function sendNewQuestionnaire(questionnaire)
 {
-    // TODO Check empty fields
-    const resource = {
-        resourceType: "Questionnaire",
-        status: "unknown",
-    };
+    const response = await fetch(baseUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(questionnaire),
+    });
 
-    if (meta.title.length > 0)
-        resource["title"] = meta.title;
+    return rejectNonOkResponse(response).json();
+}
 
-    if (meta.name.length > 0)
-        resource["name"] = meta.name;
-
-    if (meta.version.length > 0)
-        resource["version"] = meta.version;
-
-    if (meta.description.length > 0)
-        resource["description"] = meta.description;
-
-    if (meta.status.length > 0)
-        resource["status"] = meta.status;
-
-    if (items != null)
+export async function sendUpdatedQuestionnaire(questionnaire)
+{
+    if (questionnaire.id === undefined)
     {
-        const resourceItems = new Array();
-
-        for (const [index, item] of items.entries())
-        {
-            if (!supportedTypes.has(item.type))
-                continue;
-            
-            const resourceItem = {
-                linkId: `item-${index}`,
-                text: item.text,
-                type: item.type,
-                required: item.required,
-            };
-
-            if (choiceTypes.has(item.type))
-            {
-                resourceItem["answerOption"] = item.options.split(",").map((x) => {
-                    return {
-                        valueString: x.trim()
-                    };
-                });
-            }
-
-            resourceItems.push(resourceItem);
-        }
-
-        if (resourceItems.length > 0)
-            resource["item"] = resourceItems;
+        throw new TypeError("Id missing!");
     }
 
-    if (id !== null)
-        resource["id"] = id;
+    const url = `${baseUrl}/${questionnaire.id}`;
 
-    return resource;
+    const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(questionnaire),
+    });
+
+    return rejectNonOkResponse(response).json();
+}
+
+export async function receiveAllQuestionnaires(parameters = null)
+{
+    const url = `${baseUrl}${parameters !== null ?
+        `?${typeof(parameters) === "string" ? parameters : new URLSearchParams(parameters)}` : ""}`;
+
+    const response = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Accept": "application/json",
+        }
+    });
+
+    return rejectNonOkResponse(response).json();
+}
+
+export async function receiveQuestionnaire(id)
+{
+    const url = `${baseUrl}/${id}`;
+
+    const response = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Accept": "application/json",
+        }
+    });
+
+    return rejectNonOkResponse(response).json();
 }

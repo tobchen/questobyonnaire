@@ -5,6 +5,7 @@
         type: String,
         options: String,
         required: Boolean,
+        multiple: Boolean,
     });
 
     defineEmits([
@@ -12,6 +13,7 @@
         "update:type",
         "update:options",
         "update:required",
+        "update:multiple",
         "moveUp",
         "moveDown",
         "delete",
@@ -28,40 +30,51 @@
             class="block placeholder:text-emerald-500 w-full text-xl"
         />
 
-        <div class="grid gap-2 grid-cols-2 mt-2">
-            <select :value="type" @input="$emit('update:type', $event.target.value)">
-                <option value="" disabled="true">Item Type</option>
-                <option value="boolean">Boolean</option>
-                <option value="decimal">Decimal</option>
-                <option value="integer">Integer</option>
-                <option value="date">Date</option>
-                <option value="dateTime">Date & Time</option>
-                <option value="time">Time</option>
-                <option value="string">Text</option>
-                <option value="text">Long Text</option>
-                <option value="url">URL</option>
-                <option value="choice">Choice</option>
-                <option value="open-choice">Choice / Free Text</option>
-            </select>
-
-            <label class="block">
-                <input
-                    type="checkbox"
-                    :checked="required"
-                    @input="$emit('update:required', $event.target.checked)"
-                />
-                Required
-            </label>
-        </div>
+        <select
+            :value="type"
+            @input="$emit('update:type', $event.target.value)"
+            class="block w-full mt-2 bg-white p-1"
+        >
+            <option value="" disabled="true">Item Type</option>
+            <option value="boolean">Boolean</option>
+            <option value="decimal">Decimal</option>
+            <option value="integer">Integer</option>
+            <option value="date">Date</option>
+            <option value="dateTime">Date & Time</option>
+            <option value="time">Time</option>
+            <option value="text">Text</option>
+            <option value="longText">Long Text</option>
+            <option value="choice">Choice</option>
+            <option value="openChoice">Choice / Free Text</option>
+            <option value="attachment">Attachment</option>
+        </select>
 
         <input
             type="text"
             :value="options"
             placeholder="Options (Comma Separated)"
             @input="$emit('update:options', $event.target.value)"
-            v-show="type === 'choice' || type === 'open-choice'"
+            v-show="type === 'choice' || type === 'openChoice'"
             class="block placeholder:text-emerald-500 w-full mt-2"
         />
+
+        <label class="inline-block mt-2">
+            <input
+                type="checkbox"
+                :checked="required"
+                @input="$emit('update:required', $event.target.checked)"
+            />
+            Required
+        </label>
+
+        <label class="inline-block ml-2 mt-2">
+            <input
+                type="checkbox"
+                :checked="multiple"
+                @input="$emit('update:multiple', $event.target.checked)"
+            />
+            Multiple
+        </label>
         
         <fieldset class="grid grid-cols-3 gap-2 mt-2">
             <input

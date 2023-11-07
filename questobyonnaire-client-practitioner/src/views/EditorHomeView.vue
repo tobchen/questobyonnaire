@@ -1,8 +1,7 @@
 <script setup>
     import { ref } from "vue";
     import { useRouter } from "vue-router";
-    import { create as fhirCreate, search as fhirSearch } from "../scripts/fhir";
-    import { createMeta, createResource as createQuestionnaire } from "../scripts/questionnaire";
+    import { createQuestionnaire, receiveAllQuestionnaires, sendNewQuestionnaire } from "../scripts/questionnaire";
     import QuestionnaireMetaEdit from "../components/QuestionnaireMetaEdit.vue";
 
     const router = useRouter();
@@ -10,28 +9,14 @@
     const fetchPending = ref(true);
     const fetchSuccess = ref(false);
 
-    const questionnaires = ref(new Array());
+    const questionnaireList = ref(null);
 
-    const newMeta = ref(createMeta("draft"));
+    const newQuestionnaire = ref(createQuestionnaire("draft"));
 
     const isSubmitEnabled = ref(true);
 
-    fhirSearch("http://localhost:8080/fhir", "Questionnaire", { "status:not": "retired" }).then(bundle => {
-        if ("entry" in bundle)
-        {
-            for (const entry of bundle["entry"])
-            {
-                if (!("resource" in entry))
-                    continue;
-
-                const resource = entry["resource"];
-
-                questionnaires.value.push({
-                    id: resource["id"],
-                    title: "title" in resource ? resource["title"] : "Untitled",
-                })
-            }
-        }
+    receiveAllQuestionnaires("Questionnaire", { "status:not": "retired" }).then(questionnaires => {
+        questionnaireList.value = questionnaires;
 
         fetchSuccess.value = true;
     }).catch(() => {
@@ -40,23 +25,14 @@
         fetchPending.value = false;
     });
 
-    function newQuestionnaire(event)
+    function newQuestionnaireClicked(event)
     {
         event.preventDefault();
 
         isSubmitEnabled.value = false;
-        
-        const resource = createQuestionnaire(newMeta.value);
 
-        fhirCreate("http://localhost:8080/fhir", resource).then(parsedLocation => {
-            if (parsedLocation !== null)
-            {
-                router.push({ path: `/editor/${parsedLocation.id}` });
-            }
-            else
-            {
-                alert("Questionnaire created, location unknown, though.");
-            }
+        sendNewQuestionnaire(newQuestionnaire.value).then(questionnaire => {
+            router.push({ path: `/editor/${questionnaire.id}` });
         }).catch(() => {
             alert("Questionnaire creation failed!");
         }).finally(() => {
@@ -74,7 +50,7 @@
         </div>
         <div v-else-if="fetchSuccess">
             <ul class="text-white">
-                <li v-for="questionnaire in questionnaires">
+                <li v-for="questionnaire in questionnaireList">
                     <router-link :to="`/editor/${questionnaire.id}`" class="hover:underline">
                         {{ questionnaire.title }}
                     </router-link>
@@ -89,12 +65,10 @@
     <section class="bg-emerald-500 rounded mt-2 p-2">
         <h3 class="font-bold text-xl">New Questionnaire</h3>
         
-        <form @submit.capture="newQuestionnaire">
+        <form @submit.capture="newQuestionnaireClicked">
             <QuestionnaireMetaEdit
-                v-model:title="newMeta.title"
-                v-model:name="newMeta.name"
-                v-model:version="newMeta.version"
-                v-model:description="newMeta.description"
+                v-model:title="newQuestionnaire.title"
+                v-model:description="newQuestionnaire.description"
             />
 
             <input

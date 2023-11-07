@@ -1,9 +1,7 @@
 <script setup>
     import { ref } from "vue";
     import { useRoute } from "vue-router";
-    import { read as fhirRead, update as fhirUpdate } from "../scripts/fhir";
-    import { createMeta, fillMeta, createResource as createQuestionnaire,
-        createItem } from "../scripts/questionnaire";
+    import { createQuestionnaireItem, receiveQuestionnaire, sendUpdatedQuestionnaire } from "../scripts/questionnaire";
     import QuestionnaireMetaEdit from "../components/QuestionnaireMetaEdit.vue";
     import QuestionnaireItemEdit from "../components/QuestionnaireItemEdit.vue";
 
@@ -14,14 +12,10 @@
 
     const isSubmitEnabled = ref(true);
 
-    const thisId = route.params.id;
-    const thisMeta = ref(createMeta());
-    const thisItems = ref(new Array());
+    const thisQuestionnaire = ref(null);
 
-    fhirRead("http://localhost:8080/fhir", "Questionnaire", thisId).then(resource => {
-        fillMeta(thisMeta.value, resource);
-
-        // TODO Add Items
+    receiveQuestionnaire(route.params.id).then(questionnaire => {
+        thisQuestionnaire.value = questionnaire;
 
         fetchSuccess.value = true;
     }).catch(() => {
@@ -32,29 +26,29 @@
 
     function addItem()
     {
-        thisItems.value.push(createItem());
+        thisQuestionnaire.value.items.push(createQuestionnaireItem());
     }
 
     function deleteItem(index)
     {
-        thisItems.value.splice(index, 1);
+        thisQuestionnaire.value.items.splice(index, 1);
     }
 
     function moveUpItem(index)
     {
         if (index > 0)
         {
-            const items = thisItems.value.splice(index, 1);
-            thisItems.value.splice(index - 1, 0, ...items);
+            const items = thisQuestionnaire.value.items.splice(index, 1);
+            thisQuestionnaire.value.items.splice(index - 1, 0, ...items);
         }
     }
 
     function moveDownItem(index)
     {
-        if (index < thisItems.value.length - 1)
+        if (index < thisQuestionnaire.value.items.length - 1)
         {
-            const items = thisItems.value.splice(index, 1);
-            thisItems.value.splice(index + 1, 0, ...items);
+            const items = thisQuestionnaire.value.items.splice(index, 1);
+            thisQuestionnaire.value.items.splice(index + 1, 0, ...items);
         }
     }
 
@@ -64,10 +58,8 @@
 
         isSubmitEnabled.value = false;
 
-        const resource = createQuestionnaire(thisMeta.value, thisItems.value, thisId);
-
-        fhirUpdate("http://localhost:8080/fhir", resource).then(() => {
-            // Do nothing?
+        sendUpdatedQuestionnaire(thisQuestionnaire.value).then(questionnaire => {
+            thisQuestionnaire.value = questionnaire;
         }).catch(() => {
             alert("Updating failed!")
         }).finally(() => {
@@ -104,20 +96,19 @@
         <div v-else-if="fetchSuccess">
             <form @submit.capture="saveDraft">
                 <QuestionnaireMetaEdit
-                    v-model:title="thisMeta.title"
-                    v-model:name="thisMeta.name"
-                    v-model:version="thisMeta.version"
-                    v-model:description="thisMeta.description"
+                    v-model:title="thisQuestionnaire.title"
+                    v-model:description="thisQuestionnaire.description"
                 />
 
                 <section>
                     <QuestionnaireItemEdit
-                        v-for="(item, index) in thisItems"
+                        v-for="(item, index) in thisQuestionnaire.items"
                         :index="index"
                         v-model:text="item.text"
                         v-model:type="item.type"
                         v-model:options="item.options"
                         v-model:required="item.required"
+                        v-model:multiple="item.multiple"
                         @delete="deleteItem"
                         @move-up="moveUpItem"
                         @move-down="moveDownItem"
@@ -134,20 +125,20 @@
                 <fieldset class="grid grid-cols-3 gap-2 mt-2">
                     <input
                         type="submit"
-                        :disabled="!isSubmitEnabled || thisMeta.status !== 'unknown' && thisMeta.status !== 'draft'"
+                        :disabled="!isSubmitEnabled || thisQuestionnaire.status !== 'draft'"
                         value="Save Draft"
                         class="block bg-white cursor-pointer rounded"
                     />
                     <input
                         type="button"
-                        :disabled="!isSubmitEnabled || thisMeta.status !== 'unknown' && thisMeta.status !== 'draft'"
+                        :disabled="!isSubmitEnabled || thisQuestionnaire.status !== 'draft'"
                         value="Publish"
                         @click="publish"
                         class="block bg-white cursor-pointer rounded"
                     />
                     <input
                         type="button"
-                        :disabled="!isSubmitEnabled || thisMeta.status === 'retired'"
+                        :disabled="!isSubmitEnabled || thisQuestionnaire.status === 'retired'"
                         value="Retire"
                         @click="retire"
                         class="block bg-white cursor-pointer rounded"
