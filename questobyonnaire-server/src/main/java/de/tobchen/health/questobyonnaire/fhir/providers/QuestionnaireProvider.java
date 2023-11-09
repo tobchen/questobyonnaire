@@ -3,38 +3,36 @@ package de.tobchen.health.questobyonnaire.fhir.providers;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hl7.fhir.r4.model.IdType;
-import org.hl7.fhir.r4.model.Questionnaire;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
+import org.hl7.fhir.r5.model.IdType;
+import org.hl7.fhir.r5.model.Questionnaire;
 import org.springframework.stereotype.Service;
 
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.annotation.Search;
-import de.tobchen.health.questobyonnaire.model.entities.QuestionnaireEntity;
-import de.tobchen.health.questobyonnaire.model.repositories.QuestionnaireRepository;
+import de.tobchen.health.questobyonnaire.model.deserialized.DeserializedQuestionnaire;
+import de.tobchen.health.questobyonnaire.rest.controllers.QuestionnaireController;
 
 @Service
 public class QuestionnaireProvider extends AbstractQuestionnaireProvider
 {
-    private final QuestionnaireRepository repository;
+    private final QuestionnaireController controller;
 
-    public QuestionnaireProvider(QuestionnaireRepository repository)
+    public QuestionnaireProvider(QuestionnaireController controller)
     {
-        this.repository = repository;
+        this.controller = controller;
     }
 
     @Search
     public List<Questionnaire> search()
     {
-        var entities = repository.findAll();
-
         var result = new ArrayList<Questionnaire>();
 
-        for (var entity : entities)
+        var deserializedQuestionnaires = controller.search(null, null);
+
+        for (var deserializedQuestionnaire : deserializedQuestionnaires)
         {
-            var questionnaire = resourceFromEntity(entity);
+            var questionnaire = resourceFromDeserialized(deserializedQuestionnaire);
             if (questionnaire != null)
             {
                 result.add(questionnaire);
@@ -50,11 +48,8 @@ public class QuestionnaireProvider extends AbstractQuestionnaireProvider
         Questionnaire questionnaire = null;
 
         try {
-            var optional = repository.findById(id.getIdPartAsLong());
-            if (optional.isPresent())
-            {
-                questionnaire = resourceFromEntity(optional.get());
-            }
+            var deserializedQuestionnaire = controller.read(id.getIdPartAsLong());
+            questionnaire = resourceFromDeserialized(deserializedQuestionnaire);
         }
         catch (NumberFormatException e)
         {
@@ -64,9 +59,9 @@ public class QuestionnaireProvider extends AbstractQuestionnaireProvider
         return questionnaire;
     }
 
-    private @Nullable Questionnaire resourceFromEntity(@NonNull QuestionnaireEntity entity)
+    private Questionnaire resourceFromDeserialized(DeserializedQuestionnaire deserialized)
     {
-        // TODO
+        // TODO Implement
         return null;
     }
 }
