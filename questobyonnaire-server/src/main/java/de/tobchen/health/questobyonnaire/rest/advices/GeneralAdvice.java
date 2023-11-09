@@ -10,14 +10,14 @@ import de.tobchen.health.questobyonnaire.rest.exceptions.EntityNotFoundException
 import de.tobchen.health.questobyonnaire.rest.exceptions.IllegalIdException;
 import de.tobchen.health.questobyonnaire.rest.exceptions.IllegalSearchArgumentException;
 import de.tobchen.health.questobyonnaire.rest.exceptions.IllegalSearchParameterException;
-import de.tobchen.health.questobyonnaire.rest.exceptions.JsonSerializationException;
+import de.tobchen.health.questobyonnaire.rest.exceptions.JsonDeSerializationException;
 
 @RestControllerAdvice
 public class GeneralAdvice {
     @ResponseBody
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String questionnaireNotFoundHandler(EntityNotFoundException e)
+    public String entityNotFoundHandler(EntityNotFoundException e)
     {
         return e.getMessage();
     }
@@ -39,9 +39,9 @@ public class GeneralAdvice {
     }
 
     @ResponseBody
-    @ExceptionHandler(JsonSerializationException.class)
+    @ExceptionHandler(JsonDeSerializationException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String serializationExceptionHandler(JsonSerializationException e)
+    public String serializationExceptionHandler(JsonDeSerializationException e)
     {
         return e.getMessage();
     }

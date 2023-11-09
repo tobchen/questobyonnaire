@@ -4,7 +4,6 @@ import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 import App from "./App.vue";
 import HomeView from "./views/HomeView.vue";
-import EditorView from "./views/EditorView.vue";
 import EditorHomeView from "./views/EditorHomeView.vue";
 import EditorQuestionnaireView from "./views/EditorQuestionnaireView.vue";
 

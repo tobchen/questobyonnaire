@@ -20,9 +20,8 @@ import de.tobchen.health.questobyonnaire.model.deserialized.DeserializedQuestion
 import de.tobchen.health.questobyonnaire.model.entities.QuestionnaireEntity;
 import de.tobchen.health.questobyonnaire.model.repositories.QuestionnaireRepository;
 import de.tobchen.health.questobyonnaire.rest.exceptions.IllegalIdException;
-import de.tobchen.health.questobyonnaire.rest.exceptions.IllegalSearchArgumentException;
 import de.tobchen.health.questobyonnaire.rest.exceptions.IllegalSearchParameterException;
-import de.tobchen.health.questobyonnaire.rest.exceptions.JsonSerializationException;
+import de.tobchen.health.questobyonnaire.rest.exceptions.JsonDeSerializationException;
 import de.tobchen.health.questobyonnaire.rest.exceptions.EntityNotFoundException;
 
 @RestController
@@ -49,25 +48,13 @@ public class QuestionnaireController {
         }
         else if (status != null)
         {
-            try {
-                var deserializedStatus = mapper.readValue("\"" + status + "\"",
-                    DeserializedQuestionnaireStatus.class);
-                entities = repository.findAllByStatus(deserializedStatus);
-            } catch (JsonProcessingException e)
-            {
-                throw new IllegalSearchArgumentException("Unknown status");
-            }
+            var deserializedStatus = DeserializedQuestionnaireStatus.fromString(status);
+            entities = repository.findAllByStatus(deserializedStatus);
         }
         else if (statusNot != null)
         {
-            try {
-                var deserializedStatus = mapper.readValue("\"" + statusNot + "\"",
-                    DeserializedQuestionnaireStatus.class);
-                entities = repository.findAllByStatusNot(deserializedStatus);
-            } catch (JsonProcessingException e)
-            {
-                throw new IllegalSearchArgumentException("Unknown status");
-            }
+            var deserializedStatus = DeserializedQuestionnaireStatus.fromString(statusNot);
+            entities = repository.findAllByStatusNot(deserializedStatus);
         }
         else
         {
@@ -111,26 +98,24 @@ public class QuestionnaireController {
                 questionnaire.description(), questionnaire.status(), questionnaire.items());
         }
 
-        String serialized;
+        QuestionnaireEntity entity;
         try {
-            serialized = mapper.writeValueAsString(questionnaire);
+            entity = new QuestionnaireEntity(questionnaire);
         } catch (JsonProcessingException e) {
-            throw new JsonSerializationException("Cannot re-serialize questionnaire");
+            throw new JsonDeSerializationException("");
         }
 
-        var entity = new QuestionnaireEntity(questionnaire.status(), serialized);
         entity = repository.save(entity);
-
+        
         questionnaire = new DeserializedQuestionnaire(entity.getId(), questionnaire.title(),
             questionnaire.description(), questionnaire.status(), questionnaire.items());
-        
+            
         try {
-            serialized = mapper.writeValueAsString(questionnaire);
+            entity.update(questionnaire);
         } catch (JsonProcessingException e) {
-            // TODO That shouldn't have happened...
+            throw new JsonDeSerializationException("");
         }
 
-        entity.setSerialized(serialized);
         repository.save(entity);
 
         return questionnaire;
@@ -153,21 +138,11 @@ public class QuestionnaireController {
 
         var entity = optionalEntity.get();
 
-        // TODO Check status change for validity
-
-        if (entity.getStatus().equals(DeserializedQuestionnaireStatus.DRAFT))
-        {
-            String serialized;
-            try {
-                serialized = mapper.writeValueAsString(questionnaire);
-            } catch (JsonProcessingException e) {
-                throw new JsonSerializationException("Cannot re-serialize questionnaire");
-            }
-
-            entity.setSerialized(serialized);
+        try {
+            entity.update(questionnaire);
+        } catch (JsonProcessingException e) {
+            throw new JsonDeSerializationException("");
         }
-
-        entity.setStatus(questionnaire.status());
 
         repository.save(entity);
 

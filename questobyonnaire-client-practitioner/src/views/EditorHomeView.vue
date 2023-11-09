@@ -52,7 +52,7 @@
             <ul class="text-white">
                 <li v-for="questionnaire in questionnaireList">
                     <router-link :to="`/editor/${questionnaire.id}`" class="hover:underline">
-                        {{ questionnaire.title }}
+                        {{ questionnaire.title.length > 0 ? questionnaire.title : "!Untitled!" }}
                     </router-link>
                 </li>
             </ul>

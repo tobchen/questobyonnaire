@@ -4,9 +4,29 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum DeserializedQuestionnaireStatus {
     @JsonProperty("draft")
-    DRAFT,
+    DRAFT("draft"),
     @JsonProperty("published")
-    PUBLISHED,
+    PUBLISHED("published"),
     @JsonProperty("retired")
-    RETIRED,
+    RETIRED("retired");
+
+    public final String value;
+
+    private DeserializedQuestionnaireStatus(String value)
+    {
+        this.value = value;
+    }
+
+    public static DeserializedQuestionnaireStatus fromString(String str)
+    {
+        for (var status : values())
+        {
+            if (status.value.equals(str))
+            {
+                return status;
+            }
+        }
+
+        return null;
+    }
 }
