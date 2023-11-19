@@ -49,6 +49,29 @@ export async function fhirCreate(base: string, resource: Resource)
     }
 }
 
+export async function fhirUpdate(base: string, resource: Resource)
+{
+    if (resource.id === undefined)
+    {
+        throw "Resource id missing";
+    }
+
+    const url = `${base}/${resource.resourceType}/${resource.id}`;
+
+    const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/fhir+json",
+        },
+        body: JSON.stringify(resource),
+    });
+
+    if (!response.ok)
+    {
+        throw "Failed to update";
+    }
+}
+
 export async function fhirRead<T extends Resource>(base: string, type: string, id: string)
 {
     const url = `${base}/${type}/${id}`;

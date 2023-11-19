@@ -1,10 +1,12 @@
-import { QuestionnaireItem, QuestionnaireItemConstraint, QuestionnaireItemType } from "@/lib/questionnaire";
+import { QuestionnaireItem, QuestionnaireItemConstraint, QuestionnaireItemOption, QuestionnaireItemType }
+    from "@/lib/questionnaire";
 import { ChangeEvent } from "react";
 
 export default function ItemEdit({
     item,
     onTextChange,
     onTypeChange,
+    onOptionsChange,
     onConstraintChange,
     onRequiredChange,
     onRepeatsChange,
@@ -15,6 +17,7 @@ export default function ItemEdit({
     item: QuestionnaireItem,
     onTextChange: (linkId: string, text: string) => void,
     onTypeChange: (linkId: string, type: QuestionnaireItemType) => void,
+    onOptionsChange: (linkId: string, options: QuestionnaireItemOption[]) => void,
     onConstraintChange: (linkId: string, constraint: QuestionnaireItemConstraint) => void,
     onRequiredChange: (linkId: string, required: boolean) => void,
     onRepeatsChange: (linkId: string, repeats: boolean) => void,
@@ -23,6 +26,22 @@ export default function ItemEdit({
     onDelete: (linkId: string) => void,
 })
 {
+    const optionArray = new Array<string>();
+    if (item.answerOption !== undefined)
+    {
+        for (const option of item.answerOption)
+        {
+            for (const [key, value] of Object.entries(option))
+            {
+                if (key.startsWith("value") && value !== undefined)
+                {
+                    optionArray.push(String(value));
+                    break;
+                }
+            }
+        }
+    }
+
     function handleTextChange(event: ChangeEvent<HTMLInputElement>)
     {
         onTextChange(item.linkId, event.target.value);
@@ -31,6 +50,15 @@ export default function ItemEdit({
     function handleTypeChange(event: ChangeEvent<HTMLSelectElement>)
     {
         onTypeChange(item.linkId, event.target.value as QuestionnaireItemType);
+    }
+
+    function handleOptionsChange(event: ChangeEvent<HTMLInputElement>)
+    {
+        onOptionsChange(item.linkId, event.target.value.split(",").map(option => {
+            return {
+                valueString: option.trimStart(),
+            };
+        }));
     }
 
     function handleConstraintChange(event: ChangeEvent<HTMLSelectElement>)
@@ -88,6 +116,16 @@ export default function ItemEdit({
                 <option value="text">Long Text</option>
                 <option value="url">URL</option>
             </select>
+
+            {item.type === "integer" || item.type === "date" || item.type === "time"
+                || item.type === "string" ?
+            <input
+                type="text"
+                value={optionArray.join(", ")}
+                placeholder="Options"
+                onChange={handleOptionsChange}
+                className="block w-full mt-2 placeholder:text-emerald-500"
+            /> : null}
 
             <select
                 value={item.answerConstraint !== undefined ? item.answerConstraint : "optionsOnly"}
