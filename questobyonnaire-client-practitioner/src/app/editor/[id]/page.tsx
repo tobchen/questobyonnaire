@@ -3,7 +3,7 @@
 import ItemEdit from "@/components/item-edit";
 import MetaEdit from "@/components/meta-edit";
 import { fhirRead, fhirUpdate } from "@/lib/fhir";
-import { Questionnaire, QuestionnaireItem, QuestionnaireItemConstraint, QuestionnaireItemOption, QuestionnaireItemType }
+import { Questionnaire, QuestionnaireItem, QuestionnaireItemConstraint, QuestionnaireItemOption, QuestionnaireItemType, correctQuestionnaireItemOptions }
     from "@/lib/questionnaire";
 import { SyntheticEvent, useEffect, useState } from "react";
 
@@ -180,14 +180,7 @@ export default function QuestionnaireEditor({
         const handleSaveDraft = async () => {
             setPostPending(true);
 
-            const postQuestionnaire: Questionnaire = {
-                ...questionnaire,
-                item: questionnaire.item === undefined ? undefined : questionnaire.item.map(item => {
-                    return {
-                        ...item,
-                    }
-                }),
-            };
+            const postQuestionnaire = correctQuestionnaireItemOptions(questionnaire);
 
             try
             {
