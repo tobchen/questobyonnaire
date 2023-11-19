@@ -16,7 +16,10 @@ export default function RootLayout({
         <html lang="en">
             <body className="max-w-3xl mx-auto p-2 bg-emerald-700 font-mono">
                 <header className="text-white">
-                    <h1 className="text-5xl font-bold">Questobyonnaire</h1>
+                    <h1 className="text-5xl font-bold">
+                        <img src="/logo-mono.svg" className="inline-block w-12 h-12 mr-2" />
+                        Questobyonnaire
+                    </h1>
 
                     <nav>
                         <Link href="/" className="font-bold hover:underline">Home</Link>

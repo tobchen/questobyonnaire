@@ -209,13 +209,13 @@ export default function QuestionnaireEditor({
             putQuestionnaire("draft");
         };
 
-        const handlePublish = async (event: SyntheticEvent) => {
+        const handlePublish = (event: SyntheticEvent) => {
             event.preventDefault();
 
             putQuestionnaire("active");
         }
 
-        const handleRetire = async () => {
+        const handleRetire = () => {
             putQuestionnaire("retired");
         }
 
