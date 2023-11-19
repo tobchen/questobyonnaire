@@ -2,9 +2,10 @@
 
 import ItemEdit from "@/components/item-edit";
 import MetaEdit from "@/components/meta-edit";
-import { fhirRead } from "@/lib/fhir";
-import { Questionnaire, QuestionnaireItem, QuestionnaireItemConstraint, QuestionnaireItemType } from "@/lib/questionnaire";
-import { useEffect, useState } from "react";
+import { fhirRead, fhirUpdate } from "@/lib/fhir";
+import { Questionnaire, QuestionnaireItem, QuestionnaireItemConstraint, QuestionnaireItemOption, QuestionnaireItemType }
+    from "@/lib/questionnaire";
+import { SyntheticEvent, useEffect, useState } from "react";
 
 export default function QuestionnaireEditor({
     params,
@@ -61,12 +62,10 @@ export default function QuestionnaireEditor({
             {
                 setQuestionnaire({
                     ...questionnaire,
-                    item: questionnaire.item.map(item => {
-                        return {
-                            ...item,
-                            text: item.linkId === linkId ? text : item.text,
-                        };
-                    })
+                    item: questionnaire.item.map(item => item.linkId !== linkId ? item : {
+                        ...item,
+                        text: text,
+                    }),
                 })
             }
         };
@@ -76,13 +75,24 @@ export default function QuestionnaireEditor({
             {
                 setQuestionnaire({
                     ...questionnaire,
-                    item: questionnaire.item.map(item => {
-                        return {
-                            ...item,
-                            type: item.linkId === linkId ? type : item.type,
-                        };
-                    })
+                    item: questionnaire.item.map(item => item.linkId !== linkId ? item : {
+                        ...item,
+                        type,
+                    }),
                 })
+            }
+        };
+
+        const handleItemOptionsChange = (linkId: string, options: QuestionnaireItemOption[]) => {
+            if (questionnaire.item !== undefined)
+            {
+                setQuestionnaire({
+                    ...questionnaire,
+                    item: questionnaire.item.map(item => item.linkId !== linkId ? item : {
+                        ...item,
+                        answerOption: options.length === 0 ? undefined : options,
+                    }),
+                });
             }
         };
 
@@ -91,12 +101,10 @@ export default function QuestionnaireEditor({
             {
                 setQuestionnaire({
                     ...questionnaire,
-                    item: questionnaire.item.map(item => {
-                        return {
-                            ...item,
-                            answerConstraint: item.linkId === linkId ? constraint : item.answerConstraint,
-                        };
-                    })
+                    item: questionnaire.item.map(item => item.linkId !== linkId ? item : {
+                        ...item,
+                        answerConstraint: constraint,
+                    }),
                 })
             }
         };
@@ -106,12 +114,10 @@ export default function QuestionnaireEditor({
             {
                 setQuestionnaire({
                     ...questionnaire,
-                    item: questionnaire.item.map(item => {
-                        return {
-                            ...item,
-                            required: item.linkId === linkId ? required : item.required,
-                        };
-                    })
+                    item: questionnaire.item.map(item => item.linkId !== linkId ? item : {
+                        ...item,
+                        required: required,
+                    }),
                 })
             }
         };
@@ -121,12 +127,10 @@ export default function QuestionnaireEditor({
             {
                 setQuestionnaire({
                     ...questionnaire,
-                    item: questionnaire.item.map(item => {
-                        return {
-                            ...item,
-                            repeats: item.linkId === linkId ? repeats : item.repeats,
-                        };
-                    })
+                    item: questionnaire.item.map(item => item.linkId !== linkId ? item : {
+                        ...item,
+                        repeats: repeats,
+                    }),
                 })
             }
         };
@@ -173,6 +177,30 @@ export default function QuestionnaireEditor({
             }
         };
 
+        const handleSaveDraft = async () => {
+            setPostPending(true);
+
+            const postQuestionnaire: Questionnaire = {
+                ...questionnaire,
+                item: questionnaire.item === undefined ? undefined : questionnaire.item.map(item => {
+                    return {
+                        ...item,
+                    }
+                }),
+            };
+
+            try
+            {
+                await fhirUpdate(process.env.NEXT_PUBLIC_FHIR_BASE as string, postQuestionnaire);
+            }
+            catch (error)
+            {
+                alert(error);
+            }
+
+            setPostPending(false);
+        };
+
         content = <form>
             <MetaEdit
                 questionnaire={questionnaire}
@@ -188,6 +216,7 @@ export default function QuestionnaireEditor({
                         item={item}
                         onTextChange={handleItemTextChange}
                         onTypeChange={handleItemTypeChange}
+                        onOptionsChange={handleItemOptionsChange}
                         onConstraintChange={handleItemConstraintChange}
                         onRequiredChange={handleItemRequiredChange}
                         onRepeatsChange={handleItemRepeatsChange}
@@ -209,6 +238,7 @@ export default function QuestionnaireEditor({
                     type="button"
                     value="Save Draft"
                     disabled={postPending || questionnaire.status !== "draft"}
+                    onClick={handleSaveDraft}
                     className="rounded bg-white disabled:opacity-50 enabled:cursor-pointer"
                 />
                 <input
@@ -238,7 +268,8 @@ export default function QuestionnaireEditor({
 
             try
             {
-                fetchedQuestionnaire = await fhirRead<Questionnaire>(process.env.NEXT_PUBLIC_FHIR_BASE as string,
+                fetchedQuestionnaire = await fhirRead<Questionnaire>(
+                    process.env.NEXT_PUBLIC_FHIR_BASE as string,
                     "Questionnaire", params.id);
             }
             catch (error)
