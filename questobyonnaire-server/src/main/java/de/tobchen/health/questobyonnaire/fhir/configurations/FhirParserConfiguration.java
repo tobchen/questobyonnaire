@@ -4,13 +4,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
 
 @Configuration
-public class FhirContextConfiguration
+public class FhirParserConfiguration
 {
     @Bean
-	public FhirContext fhirContext()
-	{
-		return FhirContext.forR5();
-	}
+    public IParser fhirParser(FhirContext context)
+    {
+        return context.newJsonParser();
+    }
 }
