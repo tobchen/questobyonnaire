@@ -88,6 +88,13 @@ public class QuestionnaireProvider extends AbstractQuestionnaireProvider
             }
         }
 
+        if (oldStatus.equals(PublicationStatus.ACTIVE) || oldStatus.equals(PublicationStatus.RETIRED))
+        {
+            // TODO Catch exception
+            questionnaire = parser.parseResource(Questionnaire.class, entity.getSerialized());
+            questionnaire.setStatus(newStatus);
+        }
+
         entity.setStatus(newStatus);
         // TODO Catch exception
         entity.setSerialized(parser.encodeResourceToString(questionnaire));

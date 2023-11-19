@@ -3,7 +3,7 @@
 import ItemEdit from "@/components/item-edit";
 import MetaEdit from "@/components/meta-edit";
 import { fhirRead, fhirUpdate } from "@/lib/fhir";
-import { Questionnaire, QuestionnaireItem, QuestionnaireItemConstraint, QuestionnaireItemOption, QuestionnaireItemType, correctQuestionnaireItemOptions }
+import { Questionnaire, QuestionnaireItem, QuestionnaireItemConstraint, QuestionnaireItemOption, QuestionnaireItemType, QuestionnaireStatus, correctQuestionnaireItemOptions }
     from "@/lib/questionnaire";
 import { SyntheticEvent, useEffect, useState } from "react";
 
@@ -177,24 +177,49 @@ export default function QuestionnaireEditor({
             }
         };
 
-        const handleSaveDraft = async () => {
+        const putQuestionnaire = async (status: QuestionnaireStatus) => {
             setPostPending(true);
 
-            const postQuestionnaire = correctQuestionnaireItemOptions(questionnaire);
+            const questionnaireCopy = correctQuestionnaireItemOptions({
+                ...questionnaire,
+                status,
+            });
 
+            let success = true;
             try
             {
-                await fhirUpdate(process.env.NEXT_PUBLIC_FHIR_BASE as string, postQuestionnaire);
+                await fhirUpdate(process.env.NEXT_PUBLIC_FHIR_BASE as string, questionnaireCopy);
             }
             catch (error)
             {
                 alert(error);
+                console.log(error)
+                success = false;
             }
 
             setPostPending(false);
+
+            if (success)
+            {
+                setQuestionnaire(questionnaireCopy);
+            }
+        }
+
+        const handleSaveDraft = () => {
+            putQuestionnaire("draft");
         };
 
-        content = <form>
+        const handlePublish = async (event: SyntheticEvent) => {
+            event.preventDefault();
+
+            putQuestionnaire("active");
+        }
+
+        const handleRetire = async () => {
+            putQuestionnaire("retired");
+        }
+
+        content = <form onSubmit={handlePublish}>
             <MetaEdit
                 questionnaire={questionnaire}
                 onTitleChange={handleTitleChange}
@@ -244,6 +269,7 @@ export default function QuestionnaireEditor({
                     type="button"
                     value="Retire"
                     disabled={postPending || questionnaire.status === "retired"}
+                    onClick={handleRetire}
                     className="rounded bg-white disabled:opacity-50 enabled:cursor-pointer"
                 />
             </fieldset>
