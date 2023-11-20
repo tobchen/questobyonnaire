@@ -8,6 +8,7 @@ import org.hl7.fhir.r5.model.Parameters;
 import org.hl7.fhir.r5.model.Patient;
 import org.springframework.stereotype.Service;
 
+import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.rest.annotation.Create;
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.Operation;
@@ -23,9 +24,19 @@ import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
+import de.tobchen.health.questobyonnaire.fhir.repositories.PatientRepository;
 
 @Service
 public class PatientProvider extends AbstractPatientProvider {
+    private final PatientRepository repository;
+    private final IParser parser;
+
+    public PatientProvider(PatientRepository repository, IParser parser)
+    {
+        this.repository = repository;
+        this.parser = parser;
+    }
+
     @Create
     public MethodOutcome create(@ResourceParam Patient patient)
     {
@@ -48,7 +59,7 @@ public class PatientProvider extends AbstractPatientProvider {
     }
 
     @Search
-    public List<Patient> searchByIdentifier(@RequiredParam(name = Patient.SP_IDENTIFIER) TokenParam identifier)
+    public List<Patient> searchByMrn(@RequiredParam(name = Patient.SP_IDENTIFIER) TokenParam identifier)
     {
         var result = new ArrayList<Patient>();
 
@@ -60,7 +71,7 @@ public class PatientProvider extends AbstractPatientProvider {
     @Search
     public List<Patient> searchByDemographics(@OptionalParam(name = Patient.SP_FAMILY) StringParam familyName,
         @OptionalParam(name = Patient.SP_GIVEN) StringParam givenName,
-        @OptionalParam(name = Patient.SP_BIRTHDATE) DateParam birthdate)
+        @OptionalParam(name = Patient.SP_BIRTHDATE) DateParam birthDate)
     {
         var result = new ArrayList<Patient>();
 
@@ -76,4 +87,6 @@ public class PatientProvider extends AbstractPatientProvider {
         // TODO Implement
         return null;        
     }
+
+    
 }
