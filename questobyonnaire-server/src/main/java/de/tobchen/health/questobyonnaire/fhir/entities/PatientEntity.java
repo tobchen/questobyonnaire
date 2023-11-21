@@ -31,24 +31,6 @@ public class PatientEntity {
     @Lob
     private String serialized;
 
-    protected PatientEntity() {}
-
-    public PatientEntity(String mrn, String mrnSystem, String familyName, String givenName, Date birthDate,
-        PatientEntity mergedInto, String serialized)
-    {
-        this.mrn = mrn;
-        this.mrnSystem = mrnSystem;
-
-        this.familyName = familyName;
-        this.givenName = givenName;
-
-        this.birthDate = birthDate;
-
-        this.mergedInto = mergedInto;
-
-        this.serialized = serialized;
-    }
-
     public Long getId() {
         return id;
     }

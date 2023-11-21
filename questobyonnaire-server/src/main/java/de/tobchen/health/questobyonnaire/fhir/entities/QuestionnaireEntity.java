@@ -23,10 +23,9 @@ public class QuestionnaireEntity
 
     protected QuestionnaireEntity() {}
 
-    public QuestionnaireEntity(PublicationStatus status, String serialized)
+    public QuestionnaireEntity(PublicationStatus status)
     {
         this.status = status;
-        this.serialized = serialized;
     }
 
     public void setStatus(PublicationStatus status) {

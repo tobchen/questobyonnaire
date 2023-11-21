@@ -40,17 +40,15 @@ public class QuestionnaireProvider extends AbstractQuestionnaireProvider
         // TODO Check status
         var status = questionnaire.getStatus();
 
-        // TODO Catch exception
-        var serialized = parser.encodeResourceToString(questionnaire);
-
-        var entity = new QuestionnaireEntity(status, serialized);
+        var entity = new QuestionnaireEntity(status);
         entity = repository.save(entity);
 
         questionnaire.setId(entity.getId().toString());
 
         // TODO Catch exception
-        serialized = parser.encodeResourceToString(questionnaire);
+        var serialized = parser.encodeResourceToString(questionnaire);
         entity.setSerialized(serialized);
+        
         repository.save(entity);
 
         return new MethodOutcome(questionnaire.getIdElement());

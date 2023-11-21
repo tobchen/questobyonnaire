@@ -14,7 +14,9 @@ Only one set of names is searchable, prioritized as follows:
 1. `usual`
 1. First in list
 
-For identifiers, only the actual medical record number (MRN) is searchable, submitted with type of code `MR` and system `http://terminology.hl7.org/CodeSystem/v2-0203`. If multiple MRNs are supplied, only the first one is taken. MRNs can only be set once.
+For identifiers, only the actual medical record number (MRN) is searchable, submitted with type of code `MR` and system `http://terminology.hl7.org/CodeSystem/v2-0203`. If multiple MRNs are provided, only the first one is taken. MRNs can only be set once.
+
+The `link` field cannot be set by creating or updating the resource, the `$merge` operation must be called.
 
 #### Questionnaire
 
