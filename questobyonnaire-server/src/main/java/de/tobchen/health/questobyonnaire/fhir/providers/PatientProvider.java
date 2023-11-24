@@ -55,25 +55,37 @@ public class PatientProvider extends AbstractPatientProvider {
 
         repository.save(entity);
 
-        return new MethodOutcome(patient.getIdElement());
+        return new MethodOutcome(patient.getIdElement(), true);
     }
 
     @Update
-    public MethodOutcome update(@IdParam IdType id, @ResourceParam Patient patient)
+    public MethodOutcome update(@IdParam IdType idParam, @ResourceParam Patient patient)
     {
         // TODO Implement
         return null;
     }
 
     @Read
-    public Patient read(@IdParam IdType id)
+    public Patient read(@IdParam IdType idParam)
     {
-        // TODO Implement
-        return null;
+        Patient patient = null;
+
+        // TODO Catch exception
+        var id = idParam.getIdPartAsLong();
+
+        var optionalEntity = repository.findById(id);
+
+        if (optionalEntity.isPresent())
+        {
+            patient = resourceFromEntity(optionalEntity.get());
+        }
+
+        return patient; 
     }
 
     @Search
-    public List<Patient> searchByMrn(@RequiredParam(name = Patient.SP_IDENTIFIER) TokenParam identifier)
+    public List<Patient> searchByMrn(
+        @RequiredParam(name = Patient.SP_IDENTIFIER) TokenParam identifier)
     {
         var result = new ArrayList<Patient>();
 
@@ -83,7 +95,8 @@ public class PatientProvider extends AbstractPatientProvider {
     }
 
     @Search
-    public List<Patient> searchByDemographics(@OptionalParam(name = Patient.SP_FAMILY) StringParam familyName,
+    public List<Patient> searchByDemographics(
+        @OptionalParam(name = Patient.SP_FAMILY) StringParam familyName,
         @OptionalParam(name = Patient.SP_GIVEN) StringParam givenName,
         @OptionalParam(name = Patient.SP_BIRTHDATE) DateParam birthDate)
     {
@@ -212,5 +225,18 @@ public class PatientProvider extends AbstractPatientProvider {
         }
 
         return result;
+    }
+
+    private Patient resourceFromEntity(PatientEntity entity)
+    {
+        Patient resource = null;
+
+        if (entity != null)
+        {
+            // TODO Catch exception
+            resource = parser.parseResource(Patient.class, entity.getSerialized());
+        }
+
+        return resource;
     }
 }

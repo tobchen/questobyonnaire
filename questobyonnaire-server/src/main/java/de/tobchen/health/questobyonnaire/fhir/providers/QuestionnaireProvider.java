@@ -51,7 +51,7 @@ public class QuestionnaireProvider extends AbstractQuestionnaireProvider
         
         repository.save(entity);
 
-        return new MethodOutcome(questionnaire.getIdElement());
+        return new MethodOutcome(questionnaire.getIdElement(), true);
     }
 
     @Update
@@ -167,14 +167,15 @@ public class QuestionnaireProvider extends AbstractQuestionnaireProvider
 
     private Questionnaire resourceFromEntity(QuestionnaireEntity entity)
     {
-        Questionnaire questionnaire = null;
+        Questionnaire resource = null;
 
         if (entity != null)
         {
             // TODO Catch exception
-            questionnaire = parser.parseResource(Questionnaire.class, entity.getSerialized());
+            resource = parser.parseResource(Questionnaire.class,
+                entity.getSerialized());
         }
 
-        return questionnaire;
+        return resource;
     }
 }
